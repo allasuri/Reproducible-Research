@@ -1,0 +1,70 @@
+---
+title: "PA1"
+output: html_document
+---
+
+```{r PA1}
+library(dplyr)
+library(knitr)
+library(ggplot2)
+library(plyr)
+setwd("/Users/Surya/Downloads")
+activity <- read.csv("activity.csv",header=T)
+totalstepsperday <- aggregate(steps ~ date, data = activity, FUN = sum, na.rm = TRUE)
+totalstepsperday
+activity$date <- as.Date(activity$date, "%Y-%m-%d")
+msteps <- mean(totalstepsperday$steps)
+msteps
+summary(totalstepsperday)
+fivemin <- aggregate(steps ~ interval, data = activity, FUN = mean, na.rm = TRUE)
+maxsteps <- fivemin$interval[which.max(fivemin$steps)]
+maxsteps
+impute <- sum(is.na(activity$steps))
+ impute
+ activity2 <- activity
+ nas <- is.na(activity2$steps)
+ avg_interval <- tapply(activity2$steps, activity2$interval, mean, na.rm=TRUE, simplify = TRUE)
+ activity2$steps[nas] <- avg_interval[as.character(activity2$interval[nas])]
+ names(activity2)
+ sum(is.na(activity2))
+ totalstepsperday2 <- aggregate(steps ~ date, data = activity2, FUN = sum, na.rm = TRUE)
+ totalstepsperday2
+summary(totalstepsperday2)
+head(activity2)
+activity2<- activity2%>%
+        mutate(typeofday= ifelse(weekdays(activity2$date)=="Saturday" | weekdays(activity2$date)=="Sunday", "Weekend", "Weekday"))
+head(activity2)
+fivemin2<- aggregate(steps ~ interval, data = activity2, FUN = mean, na.rm = TRUE)
+head(fivemin2)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r Plot PA1, echo=TRUE}
+hist(totalstepsperday$steps, 
+      main="Total Steps per Day", 
+      xlab="Number of Steps per Day", 
+      ylab = "Interval",
+      col="orange",
+      breaks=50)
+plot(x = fivemin$interval, 
+      y = fivemin$steps, 
+      type = "l", 
+      col = "orange",
+      xlab = "5-minute Intervals",
+      ylab = "Average Steps Taken ~ Days",
+      main = "Average Daily Activity Pattern")
+hist(totalstepsperday2$steps, 
+      main = "Total Steps per Day (no-NA)", 
+      xlab = "Number of Steps per Day", 
+      ylab = "Interval",
+      col="orange",
+      breaks=50)
+ggplot(activity2, aes(x =interval , y=steps, color=typeofday)) +
+     geom_line() +
+    labs(title = "Ave Daily Steps (type of day)", x = "Interval", y = "Total Number of Steps") +
+     facet_wrap(~ typeofday, ncol = 1, nrow=2)
+```
+
